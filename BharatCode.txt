@@ -1,0 +1,10 @@
+NoteVault Bharat — built for the BharatCode Build League.
+
+Ask your own notes, in your language, answered by the BharatCode
+model API (qwen-3.8-27b by default, deepseek-v4.1-flash fallback).
+Local-first: notes stay on your machine; only matching excerpts go
+to the API, only when you ask. Grounded answers with citations,
+visible routing + budget, and a 3D note constellation.
+
+Built by M S Abhishek (MSAbhishek22) for the BharatCode Build League.
+Deadline: 10 November 2026, 11:59 PM IST.
