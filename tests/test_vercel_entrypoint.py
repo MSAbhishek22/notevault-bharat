@@ -1,14 +1,18 @@
-"""Tests: Vercel entrypoint (api/index.py) serves the real app.
+"""Tests: Vercel entrypoint serves the real app with original paths.
 
-Loads api/index.py exactly as Vercel would — the `application` WSGI
-callable bound to the default agent over the repo's real notes folder
-(5 notes, mock mode, no key) — and drives it over real HTTP via
-wsgiref. Also checks vercel.json rewrites every path to /api/index.
+Vercel's Python runtime loads the app from the entrypoint declared in
+pyproject.toml ([tool.vercel] entrypoint) and routes every request to
+it, so the app sees the original request path — no vercel.json rewrite
+is involved. A rewrite to /api/index used to mask every path as
+PATH_INFO=/api/index and made the live app 404 on /, /api/status and
+everything else; that failure mode is pinned in
+tests/test_vercel_routing_regression.py, and the diagnosis is in
+deployment/VERCEL_ROUTING_FIX.md.
 """
-import importlib.util
+import importlib
 import json
 import threading
-import urllib.error
+import tomllib
 import urllib.request
 from pathlib import Path
 from wsgiref.simple_server import make_server as make_wsgi_server
@@ -16,14 +20,19 @@ from wsgiref.simple_server import make_server as make_wsgi_server
 import pytest
 
 _REPO = Path(__file__).resolve().parent.parent
+_ENTRYPOINT = "notes_bharat.wsgi:application"
+
+
+def _declared_entrypoint():
+    with (_REPO / "pyproject.toml").open("rb") as fh:
+        cfg = tomllib.load(fh)
+    return cfg["tool"]["vercel"]["entrypoint"]
 
 
 def _load_entrypoint():
-    spec = importlib.util.spec_from_file_location(
-        "vercel_index", _REPO / "api" / "index.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.application
+    module_name, attr = _declared_entrypoint().split(":", 1)
+    module = importlib.import_module(module_name)
+    return getattr(module, attr)
 
 
 @pytest.fixture(scope="module")
@@ -50,14 +59,24 @@ def _post(base, path, obj):
         return resp.status, resp.read()
 
 
-def test_vercel_entrypoint_exposes_wsgi_application():
+def test_vercel_entrypoint_declared_in_pyproject():
+    assert _declared_entrypoint() == _ENTRYPOINT
+
+
+def test_vercel_entrypoint_resolves_to_callable_wsgi_app():
     assert callable(_load_entrypoint())
 
 
-def test_vercel_json_rewrites_everything_to_api_index():
+def test_vercel_json_has_no_rewrites():
     cfg = json.loads((_REPO / "vercel.json").read_text(encoding="utf-8"))
-    assert cfg["rewrites"] == [
-        {"source": "/(.*)", "destination": "/api/index"}]
+    assert "rewrites" not in cfg
+
+
+def test_vercel_api_shim_is_gone():
+    # api/index.py was a second function that the old rewrite pointed
+    # at; keeping it would leave two entrypoints and a double route
+    # for /api/index. The app has exactly one entrypoint now.
+    assert not (_REPO / "api" / "index.py").exists()
 
 
 def test_vercel_homepage_serves_ui(live):

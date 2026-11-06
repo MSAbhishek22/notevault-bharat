@@ -41,22 +41,37 @@ https://deno.com/deploy
 
 ## What was built for Vercel (local only — NOT pushed, NOT deployed)
 
-- `api/index.py` — thin shim re-exporting `notes_bharat.wsgi.application`
-  (Vercel detects `application` as a WSGI callable in api files).
-  Same 6 routes, same agent, same mock behaviour as the local server.
-- `vercel.json` — `{"rewrites": [{"source": "/(.*)", "destination": "/api/index"}]}`
-  (without it, only `/api` would reach the function and `/` would 404).
-- `pyproject.toml` — pins Python `>=3.12`, zero dependencies (stdlib only).
-- `tests/test_vercel_entrypoint.py` — 5 tests: entrypoint exposes a
-  callable WSGI app; vercel.json rewrite is correct; homepage, status
-  (mock, 5 notes), ask + refusal driven over real HTTP via wsgiref
-  against the repo's real notes folder.
+- `pyproject.toml` — `[tool.vercel] entrypoint =
+  "notes_bharat.wsgi:application"`: the Python runtime loads the WSGI
+  app from that module and routes EVERY request to it with the original
+  path, so the app deploys as-is. No `api/index.py` shim and no
+  `vercel.json` rewrite: a rewrite to `/api/index` used to mask every
+  path as PATH_INFO=/api/index and made the live app 404 on `/`,
+  `/api/status` and everything else (first deploy, 6 Nov 18:46 IST).
+  The fix and the full diagnosis are in
+  `deployment/VERCEL_ROUTING_FIX.md`. `vercel.json` is now `{}` (no
+  custom routing).
+- `tests/test_vercel_entrypoint.py` — 7 tests: entrypoint declared and
+  resolvable, no rewrites in vercel.json, no `api/index.py` shim left,
+  homepage, status (mock, 5 notes), ask + refusal driven over real
+  HTTP via wsgiref against the repo's real notes folder.
+- `tests/test_vercel_routing_regression.py` — 4 regression tests:
+  the old rewrite reproduced locally (PATH_INFO forced to /api/index
+  → 404 on / and /api/status), the entrypoint serving original paths,
+  ask + refusal, and a direct GET /api/index answering the app's own
+  404 without breaking later routing.
 
 ## Validation (Linux sandbox, Python 3.12.3, 6 Nov 2026)
 
-- Full suite: **44/44 pytest PASS** (39 existing + 5 new Vercel tests).
-- `vercel.json` parses; `api/index.py` loads and exposes a callable
-  `application` (checked directly).
+- Full suite: **50/50 pytest PASS** (44 before the routing fix + 6
+  new/rewritten Vercel tests, 6 Nov 2026, Linux sandbox Python 3.12.3).
+- `vercel.json` parses (now `{}` — no rewrites); the entrypoint
+  declared in `pyproject.toml` resolves to the callable
+  `notes_bharat.wsgi.application` (checked directly).
+- **Routing fix NOT yet deployed:** the live deployment
+  (EoWHmRM7qNxjyenGTFiHQRyhVq7P, 6 Nov 18:46 IST) still runs the old
+  rewrite build and 404s on every path. Push the fix and verify the
+  auto-deploy before calling the URL live.
 
 ## Honest behaviour differences vs the local server
 
@@ -87,10 +102,15 @@ https://deno.com/deploy
 
 ## Next steps (for the parent agent)
 
-1. Push the new files to `MSAbhishek22/notevault-bharat` (user
-   approval card required): `api/index.py`, `vercel.json`,
-   `pyproject.toml`, `tests/test_vercel_entrypoint.py`. Verify the
-   new head.
+1. Push the fix to `MSAbhishek22/notevault-bharat` (user approval
+   card required): `pyproject.toml` (entrypoint), `vercel.json` (no
+   rewrites), `tests/test_vercel_entrypoint.py`,
+   `tests/test_vercel_routing_regression.py`,
+   `deployment/VERCEL_ROUTING_FIX.md`. **Snapshot pushes do NOT
+   delete files, so `api/index.py` will still be on the remote after
+   the push — delete it on GitHub (web UI) in the same step, or the
+   stale /api/index function stays deployed alongside the entrypoint.**
+   Verify the new head.
 2. Dispatch a browser task: Vercel signup via "Continue with
    GitHub" (MSAbhishek22, already signed in), Hobby plan, import
    repo `MSAbhishek22/notevault-bharat`, deploy (no build command,
