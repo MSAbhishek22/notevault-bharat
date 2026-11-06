@@ -84,7 +84,7 @@ def choose_route(
     model: str,
     fallback_model: str | None = None,
     user_selected: bool = False,
-    gateway: str = "https://api.bharatcode.ai",
+    gateway: str = "https://bharatcode.ai",
     mode: str = "mock",
 ) -> RoutingInfo:
     """Build the routing decision for one answer.

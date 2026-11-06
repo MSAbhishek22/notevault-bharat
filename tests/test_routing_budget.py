@@ -47,7 +47,7 @@ def test_choose_route_default_and_user_selected_reasons():
     assert "User-selected" in chosen.chosen.reason
     assert chosen.fallback_chain[0].model == "deepseek-v4.1-flash"
     d = chosen.to_dict()
-    assert d["gateway"] == "https://api.bharatcode.ai"
+    assert d["gateway"] == "https://bharatcode.ai"
     assert "[mock]" in d["mode_label"]
 
 
@@ -68,7 +68,7 @@ def test_ask_detailed_shows_routing_budget_citations_and_mock_label(tmp_path):
     result = agent.ask_detailed("What is Abhiverse?")
     assert result.mode == "mock"
     assert result.sources == [{"title": "Abhiverse idea", "rel_path": "a.md"}]
-    assert result.routing["gateway"] == "https://api.bharatcode.ai"
+    assert result.routing["gateway"] == "https://bharatcode.ai"
     assert result.routing["chosen"]["model"] == "qwen-3.8-27b"
     assert result.routing["attempted"] == ["qwen-3.8-27b"]
     assert result.routing["fallback_used"] is False

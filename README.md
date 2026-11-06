@@ -61,14 +61,15 @@ python3 run.py serve
 
 If your BharatCode account shows a different API base URL than the
 default in `.env.example`, set `BHARATCODE_API_BASE` — the default
-(`https://api.bharatcode.ai/v1`) is **unverified**, see `RESEARCH.md`.
+(`https://bharatcode.ai/api/model/v1`) is verified from the public
+entrant Marg's client, see `RESEARCH.md`.
 
 ## Tests
 
 ```bash
 pip install pytest
 python3 -m pytest tests/ -q
-# 32 passed (Linux, 2026-11-05) — no network, no key needed
+# 39 passed (Linux, 2026-11-06 — 32 original + 7 WSGI tests) — no network, no key needed
 ```
 
 ## Honest status (Rulebook gates)

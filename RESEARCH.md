@@ -86,18 +86,21 @@ labelled UNVERIFIED.
   answers are new). If the full Unstop T&Cs (registration-gated) contain
   a fresh-code clause, that would override this — see UNVERIFIED below.
 
+## RESOLVED 2026-11-06
+
+- **API base URL.** Marg's `marg/llm.py` (`DEFAULT_BASE_URL`, read via the
+  GitHub connector 6 Nov 2026) uses `https://bharatcode.ai/api/model/v1`.
+  The repo default now matches it (config.py, llm.py); still overridable
+  with `BHARATCODE_API_BASE`. Live reachability from this sandbox was NOT
+  confirmed (curl to the endpoint timed out) — the first real run with a
+  key is the live confirmation.
+
 ## UNVERIFIED (do not claim; confirm before the live run)
 
-1. **API base URL.** No public doc states the model API base URL.
-   Default in this repo (`https://api.bharatcode.ai/v1`) is a conventional
-   OpenAI-compatible guess — **confirm it in your BharatCode account**
-   (or from the key-issuing page) and set `BHARATCODE_API_BASE` if it
-   differs. The app runs fully in mock mode without a key, so this blocks
-   only the live run, not the demo.
-2. **How a student gets a free API key** (exact signup flow, whether the
+1. **How a student gets a free API key** (exact signup flow, whether the
    student free tier needs approval, usage limits beyond "10M tokens/day"
    for Qwen). Needs the user's own BharatCode account signup.
-3. **Full Unstop T&Cs.** The AMP page text is the complete rules text
+2. **Full Unstop T&Cs.** The AMP page text is the complete rules text
    visible without login; any additional terms behind registration
    (team-size cap, fresh-code clause, India-residency proof, age minimum)
    are unverified. Jamao's listing says "1–5 per team" — third-party,

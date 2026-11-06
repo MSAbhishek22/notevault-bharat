@@ -1,7 +1,11 @@
 # Deployment Runbook — NoteVault Bharat
 
-Status: **NOT DEPLOYED. BLOCKED on the user's own taps** (Render account
-signup + deploy). Nothing below claims a live URL.
+Status: **NOT DEPLOYED. Render is BLOCKED** — a new Render account was
+created 6 Nov 2026 but Render demands a card even for a free-tier
+deploy (stopped, nothing charged). **Current deploy target is
+PythonAnywhere free tier (card-free)** — see
+`deployment/PYTHONANYWHERE_DEPLOY.md` and
+`deployment/CARD_FREE_HOST.md`. Nothing below claims a live URL.
 
 ## Stack
 
@@ -16,7 +20,7 @@ signup + deploy). Nothing below claims a live URL.
 | Variable | Purpose | Required? |
 |---|---|---|
 | `BHARATCODE_API_KEY` | BharatCode model API key (from your BharatCode account) | Only for live mode; mock demo works without it |
-| `BHARATCODE_API_BASE` | API base URL (default `https://api.bharatcode.ai/v1` — **UNVERIFIED**, confirm in your BharatCode account) | No (has default) |
+| `BHARATCODE_API_BASE` | API base URL (default `https://bharatcode.ai/api/model/v1` — verified from Marg's client 6 Nov 2026) | No (has default) |
 | `BHARATCODE_MODEL` | Default model id (default `qwen-3.8-27b`) | No |
 | `BHARATCODE_FALLBACK_MODEL` | Fallback model id (default `deepseek-v4.1-flash`) | No |
 | `BHARATCODE_PROVIDER` | `auto` / `mock` / `bharatcode` | No |

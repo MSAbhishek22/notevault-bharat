@@ -14,11 +14,13 @@ API facts (verified 2026-11-05):
   models listed on https://www.bharatcode.ai/ (checked 2026-11-05).
 - Student access: "Qwen free up to 10M tokens a day" per bharatcode.ai.
 
-UNVERIFIED — confirm in your BharatCode account before a live run:
-- The API base URL. `DEFAULT_API_BASE` below is the conventional
-  OpenAI-compatible guess (`https://api.bharatcode.ai/v1`) and is
-  overridable with `BHARATCODE_API_BASE`. The app works in mock mode
-  without any key, so nothing here blocks a demo.
+VERIFIED 2026-11-06 — API base URL: `https://bharatcode.ai/api/model/v1`,
+taken from the public Build League entrant Marg's `marg/llm.py`
+(`DEFAULT_BASE_URL`, read via the GitHub connector 6 Nov 2026). Marg
+posts both its Responses API and Chat Completions calls under this base,
+so this app's `{base}/chat/completions` is consistent with it. Still
+overridable with `BHARATCODE_API_BASE` if your account shows otherwise.
+The app works in mock mode without any key, so nothing here blocks a demo.
 """
 from __future__ import annotations
 
@@ -27,9 +29,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse
 
-# UNVERIFIED default — see module docstring. Override with
-# BHARATCODE_API_BASE after confirming it in your BharatCode account.
-DEFAULT_API_BASE = "https://api.bharatcode.ai/v1"
+# Verified default — see module docstring. Override with
+# BHARATCODE_API_BASE if your BharatCode account shows a different one.
+DEFAULT_API_BASE = "https://bharatcode.ai/api/model/v1"
 DEFAULT_MODEL = "qwen-3.8-27b"
 DEFAULT_FALLBACK_MODEL = "deepseek-v4.1-flash"
 

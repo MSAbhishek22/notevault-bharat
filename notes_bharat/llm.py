@@ -12,10 +12,11 @@ Build League entrant Marg, github.com/Mqhnish/marg):
 - Marg's documented behaviour, replicated here: requests that come
   back `503` (model busy) or `429` are retried with backoff.
 
-UNVERIFIED: the API base URL default (`https://api.bharatcode.ai/v1`)
-is the conventional OpenAI-compatible guess — confirm it in your
-BharatCode account and override with BHARATCODE_API_BASE if needed.
-The client is stdlib-only (urllib), no extra dependency.
+VERIFIED 2026-11-06: the API base URL default is
+`https://bharatcode.ai/api/model/v1`, taken from the public Build League
+entrant Marg's `marg/llm.py` (`DEFAULT_BASE_URL`, read via the GitHub
+connector). Override with BHARATCODE_API_BASE if your account shows a
+different one. The client is stdlib-only (urllib), no extra dependency.
 
 Mock path: deterministic, offline, no network. Used when no key is
 configured, so the demo and tests always run. Mock output is always
@@ -119,7 +120,7 @@ class BharatCodeProvider:
             raise RuntimeError("BharatCode model id is empty; set BHARATCODE_MODEL, e.g. qwen-3.8-27b")
         self.model = model.strip()
         self.api_key = api_key
-        self.api_base = (api_base or "").rstrip("/") or "https://api.bharatcode.ai/v1"
+        self.api_base = (api_base or "").rstrip("/") or "https://bharatcode.ai/api/model/v1"
         self._request = request_fn or _default_request
         self._sleep = sleep_fn or time.sleep
 
