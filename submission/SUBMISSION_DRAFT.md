@@ -1,9 +1,10 @@
 # Submission draft — BharatCode Build League (DO NOT SUBMIT YET)
 
 Status: **DRAFT ONLY. Nothing here has been registered, submitted or
-posted.** Submission needs the user's own taps (Unstop registration,
-BharatCode account + key, GitHub repo, Render deploy, video, then the
-submit forms). Deadline: **Tue 10 Nov 2026, 23:59 IST**.
+posted.** The repo is public and the app is LIVE (mock mode); what is
+left is the user's own taps (Unstop registration, BharatCode account +
+key, video, then the submit forms). Deadline: **Tue 10 Nov 2026,
+23:59 IST**; safe target Sun 8 Nov 22:00 IST.
 
 ## Where to submit (two places — both are the user's taps)
 
@@ -30,11 +31,11 @@ Every answer shows its route (API, model, why, fallback chain, attempts)
 and its budget. A 3D note constellation maps the vault: notes are stars,
 tags are constellations — drag to spin, click a star to read its note.
 
-## Links (fill in after the user taps)
+## Links (verified live 2026-11-06)
 
-- GitHub repo: (to be created — planned https://github.com/MSAbhishek22/notevault-bharat)
-- Live demo URL: (pending Render deploy)
-- Demo video: (pending — recorded ONLY from the live URL, after deploy)
+- GitHub repo: https://github.com/MSAbhishek22/notevault-bharat (public, main, head `011c041`)
+- Live demo URL: https://notevault-bharat.vercel.app (Vercel Hobby, free, deployment `Ht1GG5KsLDu1WhSRJMUCGUxU9e8P`, Ready 2026-11-06 18:56 IST; GET / and /api/status verified 200 live, mock mode, 5 notes)
+- Demo video: (pending — recorded ONLY from the live URL; see DEMO_VIDEO_MANIFEST.md)
 
 ## Honest reuse disclosure (include in the repo README — already there)
 
@@ -50,8 +51,10 @@ official pages — see RESEARCH.md.
 - [ ] Unstop registration done (user's tap)
 - [ ] BharatCode account created; free student API key obtained (user's tap)
 - [ ] API base URL confirmed in the BharatCode account; `BHARATCODE_API_BASE` set if different
-- [ ] Public GitHub repo created + pushed; `BharatCode.txt` verified at root
-- [ ] Render free deploy live; production smoke test passed (see runbook)
+- [x] Public GitHub repo created + pushed; `BharatCode.txt` verified at root (head `011c041`, 2026-11-06)
+- [x] Vercel Hobby deploy live; production smoke test passed (GET / 200, /api/status 200 mock + 5 notes — see deployment/RELEASE_MANIFEST.json). Render was abandoned: it demands a card even for a free-tier deploy.
+- [ ] Live run verified: mode badge says `real BharatCode`, no `[mock]` in answers (needs the BharatCode key — currently mock mode)
+- [ ] Live ask observed end to end in a real browser (POST /api/ask could not be observed from the sandbox or the automation browser)
 - [ ] Live run verified: mode badge says `real BharatCode`, no `[mock]` in answers
 - [ ] Demo video recorded from the LIVE URL (60–120s), manifest filled in
 - [ ] Repo link submitted on Unstop + bharatcode.ai/hackathon (user's taps)

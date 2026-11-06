@@ -238,7 +238,7 @@ async function load(){
     'BharatCode API: ' + s.gateway + ' · Default model: ' + s.model + (s.fallback_model ? ' · Fallback: ' + s.fallback_model : ' · No fallback configured');
   NOTES = s.notes || [];
   document.getElementById('notes').innerHTML = NOTES.map(function(n, i){
-    return '<div class="note-item" tabindex="0" role="button" onclick="showNote(' + i + ')" onkeydown="if(event.key===\'Enter\')showNote(' + i + ')">📄 ' + n.title +
+    return '<div class="note-item" tabindex="0" role="button" onclick="showNote(' + i + ')" onkeydown="if(event.key===\\'Enter\\')showNote(' + i + ')">📄 ' + n.title +
     ' <small>(' + n.word_count + ' words' + (n.tags.length ? ', #' + n.tags.join(' #') : '') + ')</small></div>';
   }).join('') || 'No notes found.';
   document.getElementById('lang').value = s.language || 'en';
