@@ -2,6 +2,8 @@
 
 **Ask your own notes, in your language — answered by the BharatCode model API.**
 
+**Live demo:** https://notevault-bharat.vercel.app
+
 Built for the **BharatCode Build League** (deadline **10 Nov 2026, 11:59 PM IST**).
 Solo entry by M S Abhishek ([@MSAbhishek22](https://github.com/MSAbhishek22)).
 
