@@ -205,8 +205,18 @@ function drawGalaxy(){
     arr.forEach(function(p, k){ if(k===0) ctx.moveTo(p.sx,p.sy); else ctx.lineTo(p.sx,p.sy); });
     ctx.stroke();
   });
+  // single constellation path through all notes, in load order
+  const ordered = pts.slice().sort(function(a,b){ return a.i - b.i; });
+  if(ordered.length >= 2){
+    ctx.strokeStyle = 'rgba(253,246,233,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ordered.forEach(function(p, k){ if(k===0) ctx.moveTo(p.sx,p.sy); else ctx.lineTo(p.sx,p.sy); });
+    ctx.stroke();
+    ctx.lineWidth = 1;
+  }
   pts.forEach(function(p){
-    const rad = Math.max(3, 7 * p.s);
+    const rad = Math.max(5, 11 * p.s);
     ctx.beginPath(); ctx.arc(p.sx, p.sy, rad, 0, Math.PI*2);
     ctx.fillStyle = p.g.color; ctx.globalAlpha = 0.55 + 0.45 * Math.min(1, p.s);
     ctx.fill(); ctx.globalAlpha = 1;
@@ -330,16 +340,21 @@ camera.position.set(0,0.4,5.4);
 camera.lookAt(0,0,0);
 var group=new THREE.Group();
 scene.add(group);
+var seedGroup=new THREE.Group();
+group.add(seedGroup);
+var noteGroup=new THREE.Group();
+group.add(noteGroup);
 
-function heroPoints(pts,cols){
+function heroPoints(pts,cols,size){
 var geo=new THREE.BufferGeometry();
 geo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
 geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
-return new THREE.Points(geo,new THREE.PointsMaterial({size:0.14,vertexColors:true}));
+return new THREE.Points(geo,new THREE.PointsMaterial({size:(size||0.14),vertexColors:true}));
 }
 function buildHero3D(notes){
-while(group.children.length>0){group.remove(group.children[0]);}
+while(noteGroup.children.length>0){noteGroup.remove(noteGroup.children[0]);}
 var pts=[],cols=[],linePts=[];
+var constellationPts=[];
 var byTag={};
 notes.forEach(function(n,i){
 var tag=(n.tags&&n.tags[0])||'untagged';
@@ -352,11 +367,12 @@ var x=r*Math.sin(theta)*Math.cos(phi)/90;
 var y=r*(Math.cos(theta)-0.55)*0.7/90;
 var z=r*Math.sin(theta)*Math.sin(phi)/90;
 pts.push(x,y,z);
+constellationPts.push(new THREE.Vector3(x,y,z));
 var c=new THREE.Color(tagColor(tag));
 cols.push(c.r,c.g,c.b);
 (byTag[tag]=byTag[tag]||[]).push([x,y,z]);
 });
-group.add(heroPoints(pts,cols));
+noteGroup.add(heroPoints(pts,cols,0.3));
 Object.keys(byTag).forEach(function(tag){
 var arr=byTag[tag];
 if(arr.length<2){return;}
@@ -366,7 +382,11 @@ linePts.push(new THREE.Vector3(arr[k+1][0],arr[k+1][1],arr[k+1][2]));
 }
 });
 if(linePts.length){
-group.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(linePts),new THREE.LineBasicMaterial({color:0xf0a13a,transparent:true,opacity:0.4})));
+noteGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(linePts),new THREE.LineBasicMaterial({color:0xf0a13a,transparent:true,opacity:0.4})));
+}
+if(constellationPts.length>=2){
+var constellationPath=new THREE.Line(new THREE.BufferGeometry().setFromPoints(constellationPts),new THREE.LineBasicMaterial({color:0xfdf6e9,transparent:true,opacity:0.65}));
+noteGroup.add(constellationPath);
 }
 }
 window.__hero3dNotes=buildHero3D;
@@ -381,7 +401,7 @@ pts.push(Math.cos(a)*r,y,Math.sin(a)*r);
 var c=new THREE.Color(palette[i%palette.length]);
 cols.push(c.r,c.g,c.b);
 }
-group.add(heroPoints(pts,cols));
+seedGroup.add(heroPoints(pts,cols,0.14));
 })();
 
 function resize(){
