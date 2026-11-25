@@ -6,10 +6,11 @@ the same local search, the same grounded-refusal rule, and the same
 routing + budget panel. The UI is the thing that *shows* the
 BharatCode call; it does not invent it.
 
-The 3D note galaxy (canvas, perspective projection, no dependency)
-is the spatial view of the vault: notes are stars, tags are
-constellations. Drag to rotate, click a star to open its note. The
-plain notes list below it is the always-available 2D fallback —
+The hero is a real Three.js 3D note constellation (CDN, auto-starts
+on first load, drag to spin), rebuilt from the live notes when they
+load. The galaxy card below it keeps the original dependency-free 2D
+canvas view as the spatial fallback, and the plain notes list below
+that is the always-available 2D fallback —
 every galaxy action is doable from the list, keyboard included.
 
 Run:  python3 run.py serve            (http://127.0.0.1:8769/)
@@ -32,6 +33,7 @@ PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NoteVault Bharat — Apne notes se poochho, apni bhasha mein</title>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <style>
 :root{
   --ink:#1b2a4a; --ink-deep:#101a30; --marigold:#f0a13a; --marigold-deep:#d98200;
@@ -56,6 +58,8 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-seri
 #galaxy{display:block;width:100%;height:300px;cursor:grab;touch-action:none}
 #galaxy:active{cursor:grabbing}
 #galaxy:focus-visible{outline:3px solid var(--marigold);outline-offset:-3px}
+#hero3d{display:block;width:100%;height:260px;margin:14px auto 4px;background:var(--ink-deep);border:1px solid #2c3f63;border-radius:12px}
+.scroll-cue{display:inline-block;margin:6px 0 0;color:var(--marigold);font-size:.95em}
 .grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:16px}
 @media(max-width:820px){.grid{grid-template-columns:1fr}}
 .card{border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--card)}
@@ -83,11 +87,13 @@ footer{margin-top:24px;text-align:center;color:var(--muted);font-size:.9em}
 Your notes stay local. Only the few excerpts that match your question go to the
 BharatCode model API — and only when you ask. Every answer shows its route, its
 model, and its budget.</p>
+<canvas id="hero3d" aria-label="Three.js 3D note constellation: your notes as stars in 3D, tags as constellations. Drag to spin."></canvas>
+<p><a class="scroll-cue" href="#constellation">Scroll to your constellation &darr;</a></p>
 </header>
 <div class="wrap">
 <div class="modebar"><span id="modebadge" class="badge mock">[mock]</span> <span id="modeline"></span></div>
 
-<div class="galaxy-card">
+<div class="galaxy-card" id="constellation">
 <h2>✦ Your notes, as a constellation</h2>
 <p>Each star is a note; stars that share a tag form a constellation. Drag to spin the sky,
 click a star to read its note. The list below works the same way — no mouse needed.</p>
@@ -168,6 +174,7 @@ function buildGalaxy(notes){
       x: r * Math.sin(theta) * Math.cos(phi), y: r * (Math.cos(theta) - 0.55) * 0.7, z: r * Math.sin(theta) * Math.sin(phi)};
   });
   drawGalaxy();
+  if(window.__hero3dNotes){window.__hero3dNotes(notes);}
 }
 function drawGalaxy(){
   const cv = document.getElementById('galaxy');
@@ -307,6 +314,107 @@ async function resetBudget(){ await api('/api/reset-budget', {}); await load(); 
   });
 })();
 load();
+</script>
+<script>
+(function(){
+var cv=document.getElementById('hero3d');
+if(!cv||!window.THREE){return;}
+var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var renderer;
+try{renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true});}
+catch(e){return;}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+var scene=new THREE.Scene();
+var camera=new THREE.PerspectiveCamera(50,2,0.1,100);
+camera.position.set(0,0.4,5.4);
+camera.lookAt(0,0,0);
+var group=new THREE.Group();
+scene.add(group);
+
+function heroPoints(pts,cols){
+var geo=new THREE.BufferGeometry();
+geo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
+geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
+return new THREE.Points(geo,new THREE.PointsMaterial({size:0.14,vertexColors:true}));
+}
+function buildHero3D(notes){
+while(group.children.length>0){group.remove(group.children[0]);}
+var pts=[],cols=[],linePts=[];
+var byTag={};
+notes.forEach(function(n,i){
+var tag=(n.tags&&n.tags[0])||'untagged';
+var h=hashStr(n.rel_path)/4294967295;
+var th=hashStr(tag)/4294967295;
+var phi=th*Math.PI*2+(h-0.5)*0.9;
+var theta=(h*2.2-0.4)+(i%3)*0.25;
+var r=150+(hashStr(n.rel_path+'r')%90);
+var x=r*Math.sin(theta)*Math.cos(phi)/90;
+var y=r*(Math.cos(theta)-0.55)*0.7/90;
+var z=r*Math.sin(theta)*Math.sin(phi)/90;
+pts.push(x,y,z);
+var c=new THREE.Color(tagColor(tag));
+cols.push(c.r,c.g,c.b);
+(byTag[tag]=byTag[tag]||[]).push([x,y,z]);
+});
+group.add(heroPoints(pts,cols));
+Object.keys(byTag).forEach(function(tag){
+var arr=byTag[tag];
+if(arr.length<2){return;}
+for(var k=0;k<arr.length-1;k++){
+linePts.push(new THREE.Vector3(arr[k][0],arr[k][1],arr[k][2]));
+linePts.push(new THREE.Vector3(arr[k+1][0],arr[k+1][1],arr[k+1][2]));
+}
+});
+if(linePts.length){
+group.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(linePts),new THREE.LineBasicMaterial({color:0xf0a13a,transparent:true,opacity:0.4})));
+}
+}
+window.__hero3dNotes=buildHero3D;
+(function(){
+var pts=[],cols=[];
+var palette=[0xf0a13a,0x7fd1c0,0xe78fb3,0xa5d6a7,0x90caf9,0xffcc80];
+for(var i=0;i<42;i++){
+var a=(i*2.39996)%(Math.PI*2);
+var r=1.1+((i*37)%10)/10*1.4;
+var y=(((i*53)%100)/100-0.5)*1.6;
+pts.push(Math.cos(a)*r,y,Math.sin(a)*r);
+var c=new THREE.Color(palette[i%palette.length]);
+cols.push(c.r,c.g,c.b);
+}
+group.add(heroPoints(pts,cols));
+})();
+
+function resize(){
+var w=cv.clientWidth||800;
+var h=cv.clientHeight||260;
+renderer.setSize(w,h,false);
+camera.aspect=w/h;
+camera.updateProjectionMatrix();
+}
+window.addEventListener('resize',resize);
+resize();
+var dragging=false,lastX=0,vel=0;
+cv.addEventListener('pointerdown',function(e){dragging=true;lastX=e.clientX;});
+window.addEventListener('pointerup',function(){dragging=false;});
+cv.addEventListener('pointermove',function(e){
+if(!dragging){return;}
+var dx=e.clientX-lastX;
+lastX=e.clientX;
+group.rotation.y+=dx*0.005;
+vel=dx*0.0004;
+});
+var start=Date.now();
+function tick(){
+requestAnimationFrame(tick);
+var t=(Date.now()-start)/1000;
+if(!document.hidden&&!reduced){
+group.rotation.y+=0.0035+vel;
+vel*=0.95;
+}
+renderer.render(scene,camera);
+}
+tick();
+})();
 </script></body></html>
 """
 
